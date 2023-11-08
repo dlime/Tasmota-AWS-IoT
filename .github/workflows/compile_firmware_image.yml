@@ -1,24 +1,33 @@
-name: Compile Tasmota firmware with required flags for AWS IoT
+name: Compile Tasmota AWS IoT firmware
 
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout latest Tasmota
+        uses: actions/checkout@v4
+        with:
+          repository: arendst/tasmota
+          ref: refs/tags/$(git ls-remote --tags https://github.com/arendst/tasmota.git | awk -F/ '{print $3}' | sort -V | tail -n 1)
 
-      - name: Run a one-line script
-        run: echo Hello, world!
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
 
-      - name: Run a multi-line script
+      - name: Install dependencies
         run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
+          pip install wheel
+          pip install -U platformio
+
+      - name: Run PlatformIO
+        run: platformio run -e tasmota
+
+      - name: Upload firmware artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: firmware
+          path: ./build_output

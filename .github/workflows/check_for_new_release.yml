@@ -1,4 +1,4 @@
-name: Weekly check for a new Tasmota release
+name: New Tasmosta release check
 
 on:
   schedule:
