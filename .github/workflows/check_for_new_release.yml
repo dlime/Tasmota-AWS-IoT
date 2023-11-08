@@ -1,0 +1,50 @@
+name: Weekly check for a new Tasmota release
+
+on:
+  schedule:
+    - cron: '0 0 * * 1' # “At 00:00 on Monday.”
+  workflow_dispatch:    # Manual trigger
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifact from 'compile_firmware_image.yml' workflow
+        id: download_artifact
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          name: previous_tasmota_release.txt
+          workflow_conclusion: success
+          workflow: compile_firmware_image.yml
+          if_no_artifact_found: warn
+
+      - name: Get current Tasmota release
+        id: get_current_release
+        run: |
+          CURRENT_RELEASE_TAG=$(curl -s https://api.github.com/repos/arendst/Tasmota/releases/latest | jq -r '.tag_name')
+          echo "current_release_tag=$CURRENT_RELEASE_TAG" >> $GITHUB_OUTPUT
+          echo "Current Tasmota release: $CURRENT_RELEASE_TAG"
+
+      - name: Get previous Tasmota release
+        id: get_previous_release
+        run: |
+          PREVIOUS_RELEASE_TAG=$(cat previous_tasmota_release.txt 2> /dev/null || echo "")
+          echo "previous_release_tag=$PREVIOUS_RELEASE_TAG" >> $GITHUB_OUTPUT
+          echo "Previous Tasmota release: $PREVIOUS_RELEASE_TAG"
+
+      - name: Compare with previously saved Tasmota release
+        id: compare_releases
+        run: |
+          if [ "${{ steps.get_current_release.outputs.current_release_tag }}" != "steps.get_previous_release.outputs.previous_release_tag" ]; then
+            echo "release_changed=true" >> $GITHUB_OUTPUT
+            echo "Release changed: true"
+          else
+            echo "release_changed=false" >> $GITHUB_OUTPUT
+            echo "Release changed: false"
+          fi
+
+      - name: Compile and create a new firmware image
+        if: steps.compare_release.outputs.release_changed == 'true'
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: compile_firmware_image.yml
