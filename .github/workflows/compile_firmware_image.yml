@@ -42,29 +42,26 @@ jobs:
           name: firmware
           path: ./build_output
 
-#
-#  Release:
-#    needs: [base-images, base32-images, language-images]
-#    runs-on: ubuntu-latest
-#    continue-on-error: true
-#    steps:
-#    - uses: actions/checkout@v3
-#    - name: Download Tasmota firmwares
-#      uses: actions/download-artifact@v3
-#      with:
-#        name: firmware
-#        path: ./mv_firmware
-#    - name: Display structure of downloaded files
-#      run: ls -R ./mv_firmware/
-#    - name: Zip all map.gz files in one file -> map_all.zip
-#      run: 7z a -mx=9 -tzip -xr'!.*' map_all.zip mv_firmware/map
-#    - name: Release
-#      uses: jason2866/action-gh-release@v1.2
-#      #if: startsWith(github.ref, 'refs/tags/')
-#      with:
-#        tag_name: ${{ github.run_number }}
-#        files: |
-#          ./mv_firmware/firmware/*
-#          map_all.zip
-#      env:
-#        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Unzip firmware artifacts
+        run: |
+          7z x firmware.zip
+          mv firmware/tasmota.bin firmware/tasmota-aws-iot.bin
+          mv firmware/tasmota.bin.gz firmware/tasmota-aws-iot.bin.gz
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.get_current_release.outputs.current_release_tag }}
+          files: ./firmware/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Store Tasmota version
+        run: |
+          echo "${{ steps.get_current_release.outputs.current_release_tag }}" > previous_tasmota_release.txt
+
+      - name: Upload Tasmota version
+        uses: actions/upload-artifact@v4
+        with:
+          name: previous_tasmota_release.txt
+          path: previous_tasmota_release.txt
