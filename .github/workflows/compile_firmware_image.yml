@@ -31,8 +31,10 @@ jobs:
           pip install -U platformio
 
       - name: Run PlatformIO
+        env:
+          PLATFORMIO_BUILD_FLAGS: -DUSE_MQTT_TLS -DUSE_MQTT_AWS_IOT_LIGHT -DUSE_MQTT_TLS_CA_CERT
         run: |
-          set PLATFORMIO_BUILD_FLAGS=-DUSE_MQTT_TLS -DUSE_MQTT_AWS_IOT_LIGHT -DUSE_MQTT_TLS_CA_CERT; platformio run -e tasmota -v
+          platformio run -e tasmota -v
 
       - name: Upload firmware artifacts
         uses: actions/upload-artifact@v3
