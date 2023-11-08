@@ -32,8 +32,8 @@ jobs:
 
       - name: Run PlatformIO
         run: |
-          echo "PLATFORMIO_BUILD_FLAGS=DUSE_MQTT_TLS -DUSE_MQTT_AWS_IOT_LIGHT -DUSE_MQTT_TLS_CA_CERT" >> "$GITHUB_ENV"
-          platformio run -e tasmota
+          echo "PLATFORMIO_BUILD_FLAGS=-DUSE_MQTT_TLS -DUSE_MQTT_AWS_IOT_LIGHT -DUSE_MQTT_TLS_CA_CERT" >> "$GITHUB_ENV"
+          platformio run -e tasmota -v
 
       - name: Upload firmware artifacts
         uses: actions/upload-artifact@v3
