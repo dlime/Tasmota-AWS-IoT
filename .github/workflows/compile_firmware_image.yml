@@ -36,17 +36,16 @@ jobs:
         run: |
           platformio run -e tasmota -v
 
+      - name: Rename firmware
+        run: |
+          mv ./build_output/tasmota.bin ./build_output/tasmota-aws-iot.bin
+          mv ./build_output/tasmota.bin.gz ./build_output/tasmota-aws-iot.bin.gz
+
       - name: Upload firmware artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: firmware
+          name: tasmota-aws-iot
           path: ./build_output
-
-      - name: Unzip firmware artifacts
-        run: |
-          7z x firmware.zip
-          mv firmware/tasmota.bin firmware/tasmota-aws-iot.bin
-          mv firmware/tasmota.bin.gz firmware/tasmota-aws-iot.bin.gz
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
