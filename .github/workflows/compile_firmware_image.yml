@@ -38,8 +38,9 @@ jobs:
 
       - name: Rename firmware
         run: |
-          mv ./build_output/tasmota.bin ./build_output/tasmota-aws-iot.bin
-          mv ./build_output/tasmota.bin.gz ./build_output/tasmota-aws-iot.bin.gz
+          cd ./build_output/firmware/
+          mv tasmota.bin tasmota-aws-iot.bin
+          mv tasmota.bin.gz tasmota-aws-iot.bin.gz
 
       - name: Upload firmware artifacts
         uses: actions/upload-artifact@v3
@@ -51,7 +52,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ steps.get_current_release.outputs.current_release_tag }}
-          files: ./firmware/*
+          files: ./build_output/firmware/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
