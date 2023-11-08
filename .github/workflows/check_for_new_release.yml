@@ -2,49 +2,40 @@ name: New Tasmota release check
 
 on:
   schedule:
-    - cron: '0 0 * * 1' # “At 00:00 on Monday.”
-  workflow_dispatch:    # Manual trigger
+    - cron: '0 0 * * 1'     # “At 00:00 on Monday.”
+  workflow_dispatch:        # Manual trigger
 
 jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - name: Download artifact from 'compile_firmware_image.yml' workflow
-        id: download_artifact
-        uses: dawidd6/action-download-artifact@v2
-        with:
-          name: previous_tasmota_release.txt
-          workflow_conclusion: success
-          workflow: compile_firmware_image.yml
-          if_no_artifact_found: warn
-
-      - name: Get current Tasmota release
-        id: get_current_release
+      - name: Get latest Tasmota release
+        id: get_latest_release
         run: |
-          CURRENT_RELEASE_TAG=$(curl -s https://api.github.com/repos/arendst/Tasmota/releases/latest | jq -r '.tag_name')
-          echo "current_release_tag=$CURRENT_RELEASE_TAG" >> $GITHUB_OUTPUT
-          echo "Current Tasmota release: $CURRENT_RELEASE_TAG"
+          LATEST_RELEASE_TAG=$(curl -s https://api.github.com/repos/arendst/Tasmota/releases/latest | jq -r '.tag_name')
+          echo "latest_release_tag=$LATEST_RELEASE_TAG" >> $GITHUB_OUTPUT
+          echo "Latest Tasmota release: $LATEST_RELEASE_TAG"
 
-      - name: Get previous Tasmota release
-        id: get_previous_release
+      - name: Get latest AWS IoT firmware release
+        id: get_current_repo_release
         run: |
-          PREVIOUS_RELEASE_TAG=$(cat previous_tasmota_release.txt 2> /dev/null || echo "")
-          echo "previous_release_tag=$PREVIOUS_RELEASE_TAG" >> $GITHUB_OUTPUT
-          echo "Previous Tasmota release: $PREVIOUS_RELEASE_TAG"
+          REPO_RELEASE_TAG=$(git tag --sort=committerdate | tail -1)
+          echo "repo_release_tag=$REPO_RELEASE_TAG" >> $GITHUB_OUTPUT
+          echo "Latest AWS IoT firmware release: $REPO_RELEASE_TAG"
 
       - name: Compare with previously saved Tasmota release
         id: compare_releases
         run: |
-          if [ "${{ steps.get_current_release.outputs.current_release_tag }}" != "steps.get_previous_release.outputs.previous_release_tag" ]; then
-            echo "release_changed=true" >> $GITHUB_OUTPUT
-            echo "Release changed: true"
+          if [ "${{ steps.get_latest_release.outputs.current_release_tag }}" != "steps.get_current_repo_release.outputs.repo_release_tag" ]; then
+            echo "new_release=true" >> $GITHUB_OUTPUT
+            echo "New Tasmota release found!"
           else
-            echo "release_changed=false" >> $GITHUB_OUTPUT
-            echo "Release changed: false"
+            echo "new_release=false" >> $GITHUB_OUTPUT
+            echo "Current compiled AWS IoT firmware is the latest"
           fi
 
       - name: Compile and create a new firmware image
-        if: steps.compare_releases.outputs.release_changed == 'true'
+        if: steps.compare_releases.outputs.new_release == 'true'
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: compile_firmware_image.yml

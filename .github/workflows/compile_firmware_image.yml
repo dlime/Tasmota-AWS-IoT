@@ -55,13 +55,3 @@ jobs:
           files: ./build_output/firmware/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Store Tasmota version
-        run: |
-          echo "${{ steps.get_current_release.outputs.current_release_tag }}" > previous_tasmota_release.txt
-
-      - name: Upload Tasmota version
-        uses: actions/upload-artifact@v3
-        with:
-          name: previous_tasmota_release.txt
-          path: previous_tasmota_release.txt
