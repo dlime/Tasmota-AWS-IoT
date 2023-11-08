@@ -32,7 +32,7 @@ jobs:
 
       - name: Run PlatformIO
         run: |
-          export PLATFORMIO_BUILD_FLAGS=-DUSE_MQTT_TLS -DUSE_MQTT_AWS_IOT_LIGHT -DUSE_MQTT_TLS_CA_CERT
+          echo "PLATFORMIO_BUILD_FLAGS=DUSE_MQTT_TLS -DUSE_MQTT_AWS_IOT_LIGHT -DUSE_MQTT_TLS_CA_CERT" >> "$GITHUB_ENV"
           platformio run -e tasmota
 
       - name: Upload firmware artifacts
