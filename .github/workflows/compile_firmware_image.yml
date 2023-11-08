@@ -31,10 +31,39 @@ jobs:
           pip install -U platformio
 
       - name: Run PlatformIO
-        run: platformio run -e tasmota
+        run: |
+          export PLATFORMIO_BUILD_FLAGS=-DUSE_MQTT_TLS -DUSE_MQTT_AWS_IOT_LIGHT -DUSE_MQTT_TLS_CA_CERT
+          platformio run -e tasmota
 
       - name: Upload firmware artifacts
         uses: actions/upload-artifact@v3
         with:
           name: firmware
           path: ./build_output
+
+#
+#  Release:
+#    needs: [base-images, base32-images, language-images]
+#    runs-on: ubuntu-latest
+#    continue-on-error: true
+#    steps:
+#    - uses: actions/checkout@v3
+#    - name: Download Tasmota firmwares
+#      uses: actions/download-artifact@v3
+#      with:
+#        name: firmware
+#        path: ./mv_firmware
+#    - name: Display structure of downloaded files
+#      run: ls -R ./mv_firmware/
+#    - name: Zip all map.gz files in one file -> map_all.zip
+#      run: 7z a -mx=9 -tzip -xr'!.*' map_all.zip mv_firmware/map
+#    - name: Release
+#      uses: jason2866/action-gh-release@v1.2
+#      #if: startsWith(github.ref, 'refs/tags/')
+#      with:
+#        tag_name: ${{ github.run_number }}
+#        files: |
+#          ./mv_firmware/firmware/*
+#          map_all.zip
+#      env:
+#        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,4 +1,4 @@
-name: New Tasmosta release check
+name: New Tasmota release check
 
 on:
   schedule:
@@ -44,7 +44,7 @@ jobs:
           fi
 
       - name: Compile and create a new firmware image
-        if: steps.compare_release.outputs.release_changed == 'true'
+        if: steps.compare_releases.outputs.release_changed == 'true'
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: compile_firmware_image.yml
