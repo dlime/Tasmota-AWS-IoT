@@ -1,5 +1,7 @@
 # Tasmota-AWS-IoT
 
+[![Compile Tasmota AWS IoT firmware](https://github.com/dlime/Tasmota-AWS-IoT/actions/workflows/compile_firmware_image.yml/badge.svg)](https://github.com/dlime/Tasmota-AWS-IoT/actions/workflows/compile_firmware_image.yml)
+
 Enable AWS IoT and MQTT TLS on Tasmota for ESP8266  devices.
 
 The firmware is built automatically via [GitHub Actions](https://github.com/dlime/Tasmota-AWS-IoT/blob/main/.github/workflows/compile_firmware_image.yml) using latest [Tasmota release](https://github.com/arendst/Tasmota/releases/latest) and the following build flags:
